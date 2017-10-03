@@ -1,31 +1,50 @@
 import os
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from tkinter import Tk, filedialog, simpledialog
+from shutil import copyfile
+
 
 Tk().withdraw()
-# file_paths = filedialog.askopenfilenames(title = "Select PDF's to encrypt", filetypes = ("PDF files","*.pdf"))
-file_paths = filedialog.askopenfilenames(filetypes=(('PDF files', '*.pdf'),
-                                   ('All files', '*.*')),
-                                   title="Select PDF's to encrypt")
+
+input_folder = filedialog.askdirectory(title= "Select folder to encrypt")
+# input_folder = 'C:/Users/Luca Ciraolo/PycharmProjects/PDF-Encryptor/test_folder'
 output_folder = filedialog.askdirectory(title= "Select output folder")
-password = simpledialog.askstring("Password entry", "Enter password to encrypt:")
+# output_folder = 'C:/Users/Luca Ciraolo/PycharmProjects/PDF-Encryptor/test_folder_output'
+password = simpledialog.askstring("Password", "Enter password to encrypt:")
+# password = 'test123'
 
 count = 1
-for file_path in file_paths:
-    print('encrypting file', count, 'of', len(file_paths))
-    in_file = open(file_path, "rb")
-    input_pdf = PdfFileReader(in_file)
+for root, dirs, files in os.walk(input_folder, topdown=False):
+    for name in files:
+        print('encrypting file', count, 'of', len(files))
+        src = os.path.join(root, name)
+        # print('source', src)
 
-    output_pdf = PdfFileWriter()
-    output_pdf.appendPagesFromReader(input_pdf)
-    output_pdf.encrypt(password)
+        dir = root[len(input_folder):]
+        target = os.path.join(output_folder + dir, name)
+        # print('target', target)
 
-    target_file_path = os.path.join(output_folder, os.path.basename(file_path))
-    out_file = open(target_file_path, "wb")
-    output_pdf.write(out_file)
-    out_file.close()
-    in_file.close()
+        if (name.endswith('.pdf')):
+            # print(target[:-4] + '.protected.pdf')
+            in_file = open(src, "rb")
+            input_pdf = PdfFileReader(in_file)
 
-    count = count + 1
+            output_pdf = PdfFileWriter()
+            output_pdf.appendPagesFromReader(input_pdf)
+            output_pdf.encrypt(password)
 
-print('Finished!')
+            final_out_path = target[:-4] + '.protected.pdf'
+            if not os.path.isdir(os.path.dirname(final_out_path)):
+                os.mkdir(os.path.dirname(final_out_path))
+
+            out_file = open(final_out_path, "wb")
+            output_pdf.write(out_file)
+            out_file.close()
+            in_file.close()
+            count += 1
+        else:
+            print(name, 'is not a PDF')
+            copyfile(src, target)
+
+
+print('Done!')
