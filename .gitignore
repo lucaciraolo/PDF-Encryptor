@@ -1,1 +1,10 @@
 # Created by .ignore support plugin (hsz.mobi)
+!/Output/PDF-Encryptor Setup.exe
+.idea/
+Output/
+__pycache__/
+build/
+dist/
+pdf-encryptor.spec
+test_folder/
+test_folder_output/
